@@ -125,6 +125,7 @@ type Direct3D11CaptureFramePoolFrameArrivedProcType func(this *uintptr, sender *
 
 /*
 eventHandler:
+
 	interface {
 		IUnknown
 		Invoke(sender *IDirect3D11CaptureFramePool, args *ole.IInspectable) uintptr
@@ -319,4 +320,14 @@ type IDirect3D11CaptureFrameVtbl struct {
 
 func (v *IDirect3D11CaptureFrame) VTable() *IDirect3D11CaptureFrameVtbl {
 	return (*IDirect3D11CaptureFrameVtbl)(unsafe.Pointer(v.RawVTable))
+}
+
+func (v *IDirect3D11CaptureFrame) Surface() (*IDirect3DSurface, error) {
+	var surface *IDirect3DSurface
+	r1, _, _ := syscall.SyscallN(v.VTable().Surface, uintptr(unsafe.Pointer(v)), uintptr(unsafe.Pointer(&surface)))
+	if r1 != win.S_OK {
+		return nil, ole.NewError(r1)
+	}
+
+	return surface, nil
 }

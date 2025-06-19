@@ -12,6 +12,12 @@ import (
 
 type DXGI_FORMAT uint32
 
+const (
+	DXGI_MAP_READ    = 1 << 0
+	DXGI_MAP_WRITE   = 1 << 1
+	DXGI_MAP_DISCARD = 1 << 2
+)
+
 var (
 	IDXGIObjectID = ole.NewGUID("{aec22fb8-76f3-4639-9be0-28eb43a67a2e}")
 
@@ -125,6 +131,22 @@ func (obj *IDXGISurface) Unmap() int32 {
 	return int32(ret)
 }
 func (obj *IDXGISurface) Release() int32 {
+	ret, _, _ := syscall.SyscallN(
+		obj.vtbl.Release,
+		uintptr(unsafe.Pointer(obj)),
+	)
+	return int32(ret)
+}
+
+type IDXGIResource struct {
+	_    structs.HostLayout
+	vtbl *IDXGIResourceVtbl
+}
+
+func (obj *IDXGIResource) QueryInterface(iid windows.GUID, pp interface{}) int32 {
+	return com.ReflectQueryInterface(obj, obj.vtbl.QueryInterface, &iid, pp)
+}
+func (obj *IDXGIResource) Release() int32 {
 	ret, _, _ := syscall.SyscallN(
 		obj.vtbl.Release,
 		uintptr(unsafe.Pointer(obj)),

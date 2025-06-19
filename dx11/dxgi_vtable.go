@@ -17,3 +17,13 @@ type IDXGISurfaceVtbl struct {
 	Map     uintptr
 	Unmap   uintptr
 }
+
+type IDXGIResourceVtbl struct {
+	_ structs.HostLayout
+	IDXGIDeviceSubObjectVtbl
+
+	GetSharedHandle     uintptr
+	GetUsage            uintptr
+	SetEvictionPriority uintptr
+	GetEvictionPriority uintptr
+}

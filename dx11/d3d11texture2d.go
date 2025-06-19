@@ -6,6 +6,7 @@ import (
 	"unsafe"
 
 	"github.com/TKMAX777/winapi/com"
+	"github.com/go-ole/go-ole"
 	"golang.org/x/sys/windows"
 )
 
@@ -14,13 +15,13 @@ type ID3D11Texture2D struct {
 	vtbl *ID3D11Texture2DVtbl
 }
 
-func (obj *ID3D11Texture2D) GetDesc(desc *D3D11_TEXTURE2D_DESC) int32 {
+func (obj *ID3D11Texture2D) GetDesc(desc *D3D11_TEXTURE2D_DESC) error {
 	ret, _, _ := syscall.SyscallN(
 		obj.vtbl.GetDesc,
 		uintptr(unsafe.Pointer(obj)),
 		uintptr(unsafe.Pointer(desc)),
 	)
-	return int32(ret)
+	return ole.NewError(ret)
 }
 func (obj *ID3D11Texture2D) Release() int32 {
 	ret, _, _ := syscall.SyscallN(

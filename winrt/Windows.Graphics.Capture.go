@@ -313,9 +313,12 @@ type IDirect3D11CaptureFrame struct {
 
 type IDirect3D11CaptureFrameVtbl struct {
 	ole.IInspectableVtbl
+	ContentSize        uintptr
+	DirtyRegionMode    uintptr
+	DirtyRegions       uintptr
 	Surface            uintptr
 	SystemRelativeTime uintptr
-	ContentSize        uintptr
+	Close              uintptr // IClosable::Close
 }
 
 func (v *IDirect3D11CaptureFrame) VTable() *IDirect3D11CaptureFrameVtbl {
@@ -324,10 +327,21 @@ func (v *IDirect3D11CaptureFrame) VTable() *IDirect3D11CaptureFrameVtbl {
 
 func (v *IDirect3D11CaptureFrame) Surface() (*IDirect3DSurface, error) {
 	var surface *IDirect3DSurface
+
 	r1, _, _ := syscall.SyscallN(v.VTable().Surface, uintptr(unsafe.Pointer(v)), uintptr(unsafe.Pointer(&surface)))
 	if r1 != win.S_OK {
 		return nil, ole.NewError(r1)
 	}
-
 	return surface, nil
+}
+
+func (v *IDirect3D11CaptureFrame) Close() error {
+	// IClosable::Close is the first method after the property vtable entries
+	const closeVTableOffset = 5 // adjust if vtable layout changes
+	closePtr := (*uintptr)(unsafe.Pointer(uintptr(unsafe.Pointer(v.VTable())) + unsafe.Sizeof(uintptr(0))*closeVTableOffset))
+	r1, _, _ := syscall.SyscallN(*closePtr, uintptr(unsafe.Pointer(v)))
+	if r1 != win.S_OK {
+		return ole.NewError(r1)
+	}
+	return nil
 }

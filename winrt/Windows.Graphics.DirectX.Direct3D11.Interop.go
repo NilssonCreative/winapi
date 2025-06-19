@@ -6,6 +6,7 @@ import (
 
 	"github.com/TKMAX777/winapi/dx11"
 	"github.com/go-ole/go-ole"
+	"golang.org/x/sys/windows"
 )
 
 // IDirect3DDxgiInterfaceAccess
@@ -13,6 +14,7 @@ import (
 
 //var IDirect3DDxgiInterfaceAccessID = ole.NewGUID("{A0B2F7C1-8D5F-4650-9D3E-9EAE3D9BC670}")
 
+var IID_IDirect3DDxgiInterfaceAccess = ole.NewGUID("{A9C3260C-7E24-4AD2-A62E-63910832823A}")
 var IDirect3DDxgiInterfaceAccessClass = "Windows.Graphics.DirectX.Direct3D11.Interop.IDirect3DDxgiInterfaceAccess"
 
 type IDirect3DDxgiInterfaceAccess struct {
@@ -21,10 +23,23 @@ type IDirect3DDxgiInterfaceAccess struct {
 
 type IDirect3DDxgiInterfaceAccessVtbl struct {
 	ole.IInspectableVtbl
+	GetInterface uintptr // func(this *IDirect3DDxgiInterfaceAccess, riid *ole.GUID, ppvObject **uintptr) HRESULT
 }
 
 func (v *IDirect3DDxgiInterfaceAccess) VTable() *IDirect3DDxgiInterfaceAccessVtbl {
 	return (*IDirect3DDxgiInterfaceAccessVtbl)(unsafe.Pointer(v.RawVTable))
+}
+
+func (v *IDirect3DDxgiInterfaceAccess) GetInterface(iid windows.GUID, ppvObject **uintptr) error {
+	if v == nil {
+		return nil
+	}
+
+	r1, _, _ := syscall.SyscallN(v.VTable().GetInterface, uintptr(unsafe.Pointer(v)), uintptr(unsafe.Pointer(&iid)), uintptr(unsafe.Pointer(ppvObject)))
+	if r1 != ole.S_OK {
+		return ole.NewError(r1)
+	}
+	return nil
 }
 
 // IID for the raw D3D11 texture

@@ -1,6 +1,7 @@
 package dx11
 
 import (
+	"structs"
 	"syscall"
 	"unsafe"
 
@@ -11,6 +12,8 @@ import (
 
 var (
 	d3d11DLL = windows.NewLazySystemDLL("d3d11.dll")
+
+	IID_ID3D11Texture2D, _ = windows.GUIDFromString("{6f15aaf2-d208-4e89-9ab4-489535d34f9c}")
 )
 
 const D3D11_SDK_VERSION = 7
@@ -36,7 +39,7 @@ type ID3D11Device struct {
 	vtbl *ID3D11DeviceVtbl
 }
 
-func (obj *ID3D11Device) CreateTexture2D(desc *D3D11_TEXTURE2D_DESC, ppTexture2D **ID3D11Texture2D) int32 {
+func (obj *ID3D11Device) CreateTexture2D(desc *D3D11_TEXTURE2D_DESC, ppTexture2D **ID3D11Texture2D) error {
 	ret, _, _ := syscall.SyscallN(
 		obj.vtbl.CreateTexture2D,
 		uintptr(unsafe.Pointer(obj)),
@@ -44,7 +47,7 @@ func (obj *ID3D11Device) CreateTexture2D(desc *D3D11_TEXTURE2D_DESC, ppTexture2D
 		uintptr(0),
 		uintptr(unsafe.Pointer(ppTexture2D)),
 	)
-	return int32(ret)
+	return ole.NewError(ret)
 }
 
 func (v *ID3D11Device) VTable() *ID3D11DeviceVtbl {
@@ -59,167 +62,66 @@ func (v *ID3D11Device) GetImmediateContext() (pImmediateContext *ID3D11DeviceCon
 var ID3D11DeviceContextID = ole.NewGUID("{c0bfa96c-e089-44fb-8eaf-26f8796190da}")
 
 type ID3D11DeviceContext struct {
-	ole.IUnknown
+	_    structs.HostLayout
+	vtbl *ID3D11DeviceContextVtbl
 }
 
-type ID3D11DeviceContextVtbl struct {
-	ole.IUnknownVtbl
-	GetDevice                                 uintptr
-	GetPrivateData                            uintptr
-	SetPrivateData                            uintptr
-	SetPrivateDataInterface                   uintptr
-	VSSetConstantBuffers                      uintptr
-	PSSetShaderResources                      uintptr
-	PSSetShader                               uintptr
-	PSSetSamplers                             uintptr
-	VSSetShader                               uintptr
-	DrawIndexed                               uintptr
-	Draw                                      uintptr
-	Map                                       uintptr
-	Unmap                                     uintptr
-	PSSetConstantBuffers                      uintptr
-	IASetInputLayout                          uintptr
-	IASetVertexBuffers                        uintptr
-	IASetIndexBuffer                          uintptr
-	DrawIndexedInstanced                      uintptr
-	DrawInstanced                             uintptr
-	GSSetConstantBuffers                      uintptr
-	GSSetShader                               uintptr
-	IASetPrimitiveTopology                    uintptr
-	VSSetShaderResources                      uintptr
-	VSSetSamplers                             uintptr
-	Begin                                     uintptr
-	End                                       uintptr
-	GetData                                   uintptr
-	SetPredication                            uintptr
-	GSSetShaderResources                      uintptr
-	GSSetSamplers                             uintptr
-	OMSetRenderTargets                        uintptr
-	OMSetRenderTargetsAndUnorderedAccessViews uintptr
-	OMSetBlendState                           uintptr
-	OMSetDepthStencilState                    uintptr
-	SOSetTargets                              uintptr
-	DrawAuto                                  uintptr
-	DrawIndexedInstancedIndirect              uintptr
-	DrawInstancedIndirect                     uintptr
-	Dispatch                                  uintptr
-	DispatchIndirect                          uintptr
-	RSSetState                                uintptr
-	RSSetViewports                            uintptr
-	RSSetScissorRects                         uintptr
-	CopySubresourceRegion                     uintptr
-	CopyResource                              uintptr
-	UpdateSubresource                         uintptr
-	CopyStructureCount                        uintptr
-	ClearRenderTargetView                     uintptr
-	ClearUnorderedAccessViewUint              uintptr
-	ClearUnorderedAccessViewFloat             uintptr
-	ClearDepthStencilView                     uintptr
-	GenerateMips                              uintptr
-	SetResourceMinLOD                         uintptr
-	GetResourceMinLOD                         uintptr
-	ResolveSubresource                        uintptr
-	ExecuteCommandList                        uintptr
-	HSSetShaderResources                      uintptr
-	HSSetShader                               uintptr
-	HSSetSamplers                             uintptr
-	HSSetConstantBuffers                      uintptr
-	DSSetShaderResources                      uintptr
-	DSSetShader                               uintptr
-	DSSetSamplers                             uintptr
-	DSSetConstantBuffers                      uintptr
-	CSSetShaderResources                      uintptr
-	CSSetUnorderedAccessViews                 uintptr
-	CSSetShader                               uintptr
-	CSSetSamplers                             uintptr
-	CSSetConstantBuffers                      uintptr
-	VSGetConstantBuffers                      uintptr
-	PSGetShaderResources                      uintptr
-	PSGetShader                               uintptr
-	PSGetSamplers                             uintptr
-	VSGetShader                               uintptr
-	PSGetConstantBuffers                      uintptr
-	IAGetInputLayout                          uintptr
-	IAGetVertexBuffers                        uintptr
-	IAGetIndexBuffer                          uintptr
-	GSGetConstantBuffers                      uintptr
-	GSGetShader                               uintptr
-	IAGetPrimitiveTopology                    uintptr
-	VSGetShaderResources                      uintptr
-	VSGetSamplers                             uintptr
-	GetPredication                            uintptr
-	GSGetShaderResources                      uintptr
-	GSGetSamplers                             uintptr
-	OMGetRenderTargets                        uintptr
-	OMGetRenderTargetsAndUnorderedAccessViews uintptr
-	OMGetBlendState                           uintptr
-	OMGetDepthStencilState                    uintptr
-	SOGetTargets                              uintptr
-	RSGetState                                uintptr
-	RSGetViewports                            uintptr
-	RSGetScissorRects                         uintptr
-	HSGetShaderResources                      uintptr
-	HSGetShader                               uintptr
-	HSGetSamplers                             uintptr
-	HSGetConstantBuffers                      uintptr
-	DSGetShaderResources                      uintptr
-	DSGetShader                               uintptr
-	DSGetSamplers                             uintptr
-	DSGetConstantBuffers                      uintptr
-	CSGetShaderResources                      uintptr
-	CSGetUnorderedAccessViews                 uintptr
-	CSGetShader                               uintptr
-	CSGetSamplers                             uintptr
-	CSGetConstantBuffers                      uintptr
-	ClearState                                uintptr
-	Flush                                     uintptr
-	GetType                                   uintptr
-	GetContextFlags                           uintptr
-	FinishCommandList                         uintptr
+func (obj *ID3D11DeviceContext) CopyResourceDXGI(dst, src *IDXGIResource) int32 {
+	ret, _, _ := syscall.SyscallN(
+		obj.vtbl.CopyResource,
+		uintptr(unsafe.Pointer(obj)),
+		uintptr(unsafe.Pointer(dst)),
+		uintptr(unsafe.Pointer(src)),
+	)
+	return int32(ret)
+}
+func (obj *ID3D11DeviceContext) CopyResource2D(dst, src *ID3D11Texture2D) int32 {
+	ret, _, _ := syscall.SyscallN(
+		obj.vtbl.CopyResource,
+		uintptr(unsafe.Pointer(obj)),
+		uintptr(unsafe.Pointer(dst)),
+		uintptr(unsafe.Pointer(src)),
+	)
+	return int32(ret)
+}
+func (obj *ID3D11DeviceContext) CopySubresourceRegion2D(dst *ID3D11Texture2D, dstSubResource, dstX, dstY, dstZ uint32, src *ID3D11Texture2D, srcSubResource uint32, pSrcBox *D3D11_BOX) int32 {
+	ret, _, _ := syscall.SyscallN(
+		obj.vtbl.CopySubresourceRegion,
+		uintptr(unsafe.Pointer(obj)),
+		uintptr(unsafe.Pointer(dst)),
+		uintptr(dstSubResource),
+		uintptr(dstX),
+		uintptr(dstY),
+		uintptr(dstZ),
+		uintptr(unsafe.Pointer(src)),
+		uintptr(srcSubResource),
+		uintptr(unsafe.Pointer(pSrcBox)),
+	)
+	return int32(ret)
 }
 
-func (v *ID3D11DeviceContext) VTable() *ID3D11DeviceContextVtbl {
-	return (*ID3D11DeviceContextVtbl)(unsafe.Pointer(v.RawVTable))
+func (obj *ID3D11DeviceContext) CopySubresourceRegion(dst *ID3D11Resource, dstSubResource, dstX, dstY, dstZ uint32, src *ID3D11Resource, srcSubResource uint32, pSrcBox *D3D11_BOX) int32 {
+	ret, _, _ := syscall.SyscallN(
+		obj.vtbl.CopySubresourceRegion,
+		uintptr(unsafe.Pointer(obj)),
+		uintptr(unsafe.Pointer(dst)),
+		uintptr(dstSubResource),
+		uintptr(dstX),
+		uintptr(dstY),
+		uintptr(dstZ),
+		uintptr(unsafe.Pointer(src)),
+		uintptr(srcSubResource),
+		uintptr(unsafe.Pointer(pSrcBox)),
+	)
+	return int32(ret)
 }
-
-// func (v *ID3D11DeviceContext) CopyResource(dst, src *ID3D11Resource) {
-// 	if v == nil {
-// 		panic("nil DeviceContext")
-// 	}
-// 	// Note: no HRESULT returned
-// 	syscall.Syscall(
-// 		v.VTable().CopyResource,      // pointer to the vtable slot
-// 		3,                            // this + two args
-// 		uintptr(unsafe.Pointer(v)),   // this
-// 		uintptr(unsafe.Pointer(dst)), // dst COM pointer
-// 		uintptr(unsafe.Pointer(src)), // src COM pointer
-// 	)
-// }
-
-// func (v *ID3D11DeviceContext) Map(resource *ID3D11Resource, subresource uint32, mapType D3D11_MAP, mapFlags uint32) (*D3D11_MAPPED_SUBRESOURCE, error) {
-// 	if v == nil {
-// 		return nil, ole.NewError(ole.E_POINTER)
-// 	}
-
-// 	var mappedSubresource D3D11_MAPPED_SUBRESOURCE
-// 	r1, _, _ := syscall.SyscallN(v.VTable().Map, uintptr(unsafe.Pointer(v)), uintptr(unsafe.Pointer(resource)), uintptr(subresource), uintptr(mapType), uintptr(mapFlags), uintptr(unsafe.Pointer(&mappedSubresource)))
-// 	if r1 != win.S_OK {
-// 		return nil, ole.NewError(r1)
-// 	}
-// 	return &mappedSubresource, nil
-// }
-
-// func (v *ID3D11DeviceContext) Unmap(resource *ID3D11Resource, subresource uint32) error {
-// 	if v == nil {
-// 		return ole.NewError(ole.E_POINTER)
-// 	}
-
-// 	r1, _, _ := syscall.SyscallN(v.VTable().Unmap, uintptr(unsafe.Pointer(v)), uintptr(unsafe.Pointer(resource)), uintptr(subresource))
-// 	if r1 != win.S_OK {
-// 		return ole.NewError(r1)
-// 	}
-// 	return nil
-// }
+func (obj *ID3D11DeviceContext) Release() int32 {
+	ret, _, _ := syscall.SyscallN(
+		obj.vtbl.Release,
+		uintptr(unsafe.Pointer(obj)),
+	)
+	return int32(ret)
+}
 
 var pD3DCreateDevice = d3d11DLL.NewProc("D3D11CreateDevice")
 
@@ -263,4 +165,17 @@ func CreateDirect3D11DeviceFromDXGIDevice(dxgiDevice *IDXGIDevice, graphicsDevic
 		return err
 	}
 	return nil
+}
+
+type ID3D11Resource struct {
+	_    structs.HostLayout
+	vtbl *ID3D11ResourceVtbl
+}
+
+func (obj *ID3D11Resource) Release() int32 {
+	ret, _, _ := syscall.SyscallN(
+		obj.vtbl.Release,
+		uintptr(unsafe.Pointer(obj)),
+	)
+	return int32(ret)
 }

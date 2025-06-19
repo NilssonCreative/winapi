@@ -4,6 +4,12 @@ import (
 	"structs"
 )
 
+type D3D11_BOX struct {
+	_ structs.HostLayout
+
+	Left, Top, Front, Right, Bottom, Back uint32
+}
+
 type D3D11_TEXTURE2D_DESC struct {
 	_ structs.HostLayout
 

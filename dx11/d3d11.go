@@ -182,44 +182,44 @@ func (v *ID3D11DeviceContext) VTable() *ID3D11DeviceContextVtbl {
 	return (*ID3D11DeviceContextVtbl)(unsafe.Pointer(v.RawVTable))
 }
 
-func (v *ID3D11DeviceContext) CopyResource(dst, src *ID3D11Resource) {
-	if v == nil {
-		panic("nil DeviceContext")
-	}
-	// Note: no HRESULT returned
-	syscall.Syscall(
-		v.VTable().CopyResource,      // pointer to the vtable slot
-		3,                            // this + two args
-		uintptr(unsafe.Pointer(v)),   // this
-		uintptr(unsafe.Pointer(dst)), // dst COM pointer
-		uintptr(unsafe.Pointer(src)), // src COM pointer
-	)
-}
+// func (v *ID3D11DeviceContext) CopyResource(dst, src *ID3D11Resource) {
+// 	if v == nil {
+// 		panic("nil DeviceContext")
+// 	}
+// 	// Note: no HRESULT returned
+// 	syscall.Syscall(
+// 		v.VTable().CopyResource,      // pointer to the vtable slot
+// 		3,                            // this + two args
+// 		uintptr(unsafe.Pointer(v)),   // this
+// 		uintptr(unsafe.Pointer(dst)), // dst COM pointer
+// 		uintptr(unsafe.Pointer(src)), // src COM pointer
+// 	)
+// }
 
-func (v *ID3D11DeviceContext) Map(resource *ID3D11Resource, subresource uint32, mapType D3D11_MAP, mapFlags uint32) (*D3D11_MAPPED_SUBRESOURCE, error) {
-	if v == nil {
-		return nil, ole.NewError(ole.E_POINTER)
-	}
+// func (v *ID3D11DeviceContext) Map(resource *ID3D11Resource, subresource uint32, mapType D3D11_MAP, mapFlags uint32) (*D3D11_MAPPED_SUBRESOURCE, error) {
+// 	if v == nil {
+// 		return nil, ole.NewError(ole.E_POINTER)
+// 	}
 
-	var mappedSubresource D3D11_MAPPED_SUBRESOURCE
-	r1, _, _ := syscall.SyscallN(v.VTable().Map, uintptr(unsafe.Pointer(v)), uintptr(unsafe.Pointer(resource)), uintptr(subresource), uintptr(mapType), uintptr(mapFlags), uintptr(unsafe.Pointer(&mappedSubresource)))
-	if r1 != win.S_OK {
-		return nil, ole.NewError(r1)
-	}
-	return &mappedSubresource, nil
-}
+// 	var mappedSubresource D3D11_MAPPED_SUBRESOURCE
+// 	r1, _, _ := syscall.SyscallN(v.VTable().Map, uintptr(unsafe.Pointer(v)), uintptr(unsafe.Pointer(resource)), uintptr(subresource), uintptr(mapType), uintptr(mapFlags), uintptr(unsafe.Pointer(&mappedSubresource)))
+// 	if r1 != win.S_OK {
+// 		return nil, ole.NewError(r1)
+// 	}
+// 	return &mappedSubresource, nil
+// }
 
-func (v *ID3D11DeviceContext) Unmap(resource *ID3D11Resource, subresource uint32) error {
-	if v == nil {
-		return ole.NewError(ole.E_POINTER)
-	}
+// func (v *ID3D11DeviceContext) Unmap(resource *ID3D11Resource, subresource uint32) error {
+// 	if v == nil {
+// 		return ole.NewError(ole.E_POINTER)
+// 	}
 
-	r1, _, _ := syscall.SyscallN(v.VTable().Unmap, uintptr(unsafe.Pointer(v)), uintptr(unsafe.Pointer(resource)), uintptr(subresource))
-	if r1 != win.S_OK {
-		return ole.NewError(r1)
-	}
-	return nil
-}
+// 	r1, _, _ := syscall.SyscallN(v.VTable().Unmap, uintptr(unsafe.Pointer(v)), uintptr(unsafe.Pointer(resource)), uintptr(subresource))
+// 	if r1 != win.S_OK {
+// 		return ole.NewError(r1)
+// 	}
+// 	return nil
+// }
 
 var pD3DCreateDevice = d3d11DLL.NewProc("D3D11CreateDevice")
 

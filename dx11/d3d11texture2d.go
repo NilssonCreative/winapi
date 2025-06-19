@@ -5,6 +5,7 @@ import (
 	"syscall"
 	"unsafe"
 
+	"github.com/TKMAX777/winapi/com"
 	"golang.org/x/sys/windows"
 )
 

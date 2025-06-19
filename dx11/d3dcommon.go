@@ -1,5 +1,7 @@
 package dx11
 
+import "unsafe"
+
 type D3D_DRIVER_TYPE int
 
 const (
@@ -195,3 +197,47 @@ const (
 	D3D11_SRV_DIMENSION_TEXTURECUBEARRAY   D3D_SRV_DIMENSION = D3D_SRV_DIMENSION_TEXTURECUBEARRAY
 	D3D11_SRV_DIMENSION_BUFFEREX           D3D_SRV_DIMENSION = D3D_SRV_DIMENSION_BUFFEREX
 )
+
+const (
+	D3D11_USAGE_DEFAULT   uint32 = 0
+	D3D11_USAGE_IMMUTABLE uint32 = 1
+	D3D11_USAGE_DYNAMIC   uint32 = 2
+	D3D11_USAGE_READBACK  uint32 = 3
+	D3D11_USAGE_WRITEONLY uint32 = 4
+	D3D11_USAGE_STAGING   uint32 = 5
+)
+
+const (
+	D3D11_CPU_ACCESS_READ uint32 = 0x00000001
+)
+
+type D3D11_SUBRESOURCE_DATA struct {
+	pSysMem          *byte
+	pSysMemSlice     *byte
+	SysMemPitch      uint32
+	SysMemSlicePitch uint32
+}
+
+// D3D11_MAP is the CPU access flags for Map()
+type D3D11_MAP uint32
+
+const (
+	D3D11_MAP_READ               D3D11_MAP = 1
+	D3D11_MAP_WRITE              D3D11_MAP = 2
+	D3D11_MAP_READ_WRITE         D3D11_MAP = 3
+	D3D11_MAP_WRITE_DISCARD      D3D11_MAP = 4
+	D3D11_MAP_WRITE_NO_OVERWRITE D3D11_MAP = 5
+)
+
+// D3D11_MAPPED_SUBRESOURCE mirrors the C struct:
+//
+//	typedef struct D3D11_MAPPED_SUBRESOURCE {
+//	  void*           pData;
+//	  UINT            RowPitch;
+//	  UINT            DepthPitch;
+//	} D3D11_MAPPED_SUBRESOURCE;
+type D3D11_MAPPED_SUBRESOURCE struct {
+	PData      unsafe.Pointer
+	RowPitch   uint32
+	DepthPitch uint32
+}

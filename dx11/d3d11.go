@@ -33,50 +33,18 @@ var ID3D11DeviceID = ole.NewGUID("{db6f6ddb-ac77-4e88-8253-819df9bbf140}")
 
 type ID3D11Device struct {
 	ole.IUnknown
+	vtbl *ID3D11DeviceVtbl
 }
 
-type ID3D11DeviceVtbl struct {
-	ole.IUnknownVtbl
-	CreateBuffer                         uintptr
-	CreateTexture1D                      uintptr
-	CreateTexture2D                      uintptr
-	CreateTexture3D                      uintptr
-	CreateShaderResourceView             uintptr
-	CreateUnorderedAccessView            uintptr
-	CreateRenderTargetView               uintptr
-	CreateDepthStencilView               uintptr
-	CreateInputLayout                    uintptr
-	CreateVertexShader                   uintptr
-	CreateGeometryShader                 uintptr
-	CreateGeometryShaderWithStreamOutput uintptr
-	CreatePixelShader                    uintptr
-	CreateHullShader                     uintptr
-	CreateDomainShader                   uintptr
-	CreateComputeShader                  uintptr
-	CreateClassLinkage                   uintptr
-	CreateBlendState                     uintptr
-	CreateDepthStencilState              uintptr
-	CreateRasterizerState                uintptr
-	CreateSamplerState                   uintptr
-	CreateQuery                          uintptr
-	CreatePredicate                      uintptr
-	CreateCounter                        uintptr
-	CreateDeferredContext                uintptr
-	OpenSharedResource                   uintptr
-	CheckFormatSupport                   uintptr
-	CheckMultisampleQualityLevels        uintptr
-	CheckCounterInfo                     uintptr
-	CheckCounter                         uintptr
-	CheckFeatureSupport                  uintptr
-	GetPrivateData                       uintptr
-	SetPrivateData                       uintptr
-	SetPrivateDataInterface              uintptr
-	GetFeatureLevel                      uintptr
-	GetCreationFlags                     uintptr
-	GetDeviceRemovedReason               uintptr
-	GetImmediateContext                  uintptr
-	SetExceptionMode                     uintptr
-	GetExceptionMode                     uintptr
+func (obj *ID3D11Device) CreateTexture2D(desc *D3D11_TEXTURE2D_DESC, ppTexture2D **ID3D11Texture2D) int32 {
+	ret, _, _ := syscall.SyscallN(
+		obj.vtbl.CreateTexture2D,
+		uintptr(unsafe.Pointer(obj)),
+		uintptr(unsafe.Pointer(desc)),
+		uintptr(0),
+		uintptr(unsafe.Pointer(ppTexture2D)),
+	)
+	return int32(ret)
 }
 
 func (v *ID3D11Device) VTable() *ID3D11DeviceVtbl {
@@ -212,6 +180,45 @@ type ID3D11DeviceContextVtbl struct {
 
 func (v *ID3D11DeviceContext) VTable() *ID3D11DeviceContextVtbl {
 	return (*ID3D11DeviceContextVtbl)(unsafe.Pointer(v.RawVTable))
+}
+
+func (v *ID3D11DeviceContext) CopyResource(dst, src *ID3D11Resource) {
+	if v == nil {
+		panic("nil DeviceContext")
+	}
+	// Note: no HRESULT returned
+	syscall.Syscall(
+		v.VTable().CopyResource,      // pointer to the vtable slot
+		3,                            // this + two args
+		uintptr(unsafe.Pointer(v)),   // this
+		uintptr(unsafe.Pointer(dst)), // dst COM pointer
+		uintptr(unsafe.Pointer(src)), // src COM pointer
+	)
+}
+
+func (v *ID3D11DeviceContext) Map(resource *ID3D11Resource, subresource uint32, mapType D3D11_MAP, mapFlags uint32) (*D3D11_MAPPED_SUBRESOURCE, error) {
+	if v == nil {
+		return nil, ole.NewError(ole.E_POINTER)
+	}
+
+	var mappedSubresource D3D11_MAPPED_SUBRESOURCE
+	r1, _, _ := syscall.SyscallN(v.VTable().Map, uintptr(unsafe.Pointer(v)), uintptr(unsafe.Pointer(resource)), uintptr(subresource), uintptr(mapType), uintptr(mapFlags), uintptr(unsafe.Pointer(&mappedSubresource)))
+	if r1 != win.S_OK {
+		return nil, ole.NewError(r1)
+	}
+	return &mappedSubresource, nil
+}
+
+func (v *ID3D11DeviceContext) Unmap(resource *ID3D11Resource, subresource uint32) error {
+	if v == nil {
+		return ole.NewError(ole.E_POINTER)
+	}
+
+	r1, _, _ := syscall.SyscallN(v.VTable().Unmap, uintptr(unsafe.Pointer(v)), uintptr(unsafe.Pointer(resource)), uintptr(subresource))
+	if r1 != win.S_OK {
+		return ole.NewError(r1)
+	}
+	return nil
 }
 
 var pD3DCreateDevice = d3d11DLL.NewProc("D3D11CreateDevice")
